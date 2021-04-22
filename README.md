@@ -24,7 +24,7 @@ hour until the beginning of the next hour. For example, a time span between 9am 
       Ingrid, the response should be a collection of 1-hour slots: from 9am to 10am on
       Tuesday, from 9am to 10am on Thursday.
       
-##Possible Use Cases
+## Possible Use Cases
 
 - As an INTERVIEWER, I would like to schedule an interview
 
