@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/saleco/interview-calendar-api.svg?branch=master)](https://travis-ci.com/saleco/interview-calendar-api)
+[![codecov](https://codecov.io/gh/saleco/interview-calendar-api/branch/master/graph/badge.svg?token=cvjdCr32aQ)](https://codecov.io/gh/saleco/interview-calendar-api)
+![docker](https://img.shields.io/docker/v/saleco/interview-calendar-api)
 # Interview Calendar API 
 ## Description 
 API designed to match interviewers and candidates timetable
