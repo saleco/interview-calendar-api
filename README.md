@@ -26,16 +26,43 @@ hour until the beginning of the next hour. For example, a time span between 9am 
       
 ##Possible Use Cases
 
-- ### As an INTERVIEWER, I would like to schedule an interview
+- As an INTERVIEWER, I would like to schedule an interview
 
-- ### As an INTERVIEWER, I would like to setup myself as unavailable (vacations, sick day)
+- As an INTERVIEWER, I would like to set up myself as unavailable (vacations, sick day)
 
-- ### As an INTERVIEWER, I would like to cancel an interview
+- As an INTERVIEWER, I would like to cancel an interview
 
-- ### As an INTERVIEWER, I would like to modify an interview
+- As an INTERVIEWER, I would like to modify an interview
   
-- ### As a CANDIDATE, I would like to modify an interview
+- As a CANDIDATE, I would like to modify an interview
 
-## Local Running
+## Local Development Environment
+### Pre-requisites
+- jdk 11
+- maven 3
+### Running the application 
+`mvn clean install`
 
-## Cloud Running
+`mvn springboot:run`
+
+### Running Docker Container
+### Requirements
+- Docker
+
+`./src/main/docker/local/docker-compose up -d`
+
+### Services
+
+| Service  |      Url                |  Description                             |
+|----------|:-----------------------:|-----------------------------------------:|
+| Kibana   |  [Kibana](http://localhost:5601/) | ELK Stack for Logging |
+| Metrics  |  [Spring Boot Admin](http://localhost:1111/wallboard) | Spring Boot Admin UI |
+| API      | [Swagger UI](http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config) | Open API 3 Description |
+
+## Possible Improvements
+- Java doc
+- Eureka for service discovery
+- Cloud Config for properties
+- Gateway to handle requests / security / loadbalancing
+- Docker Stack  
+- Docker swarm 

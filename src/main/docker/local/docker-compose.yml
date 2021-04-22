@@ -53,3 +53,16 @@ services:
       interval: 1s
       timeout: 60s
       retries: 120
+
+  interview-calendar-api-service:
+    image: saleco/interview-calendar-api
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_PROFILES_ACTIVE: 'cloud'
+    depends_on:
+      - admin
+    restart: on-failure
+    labels:
+      collect_logs_with_filebeat: "true"
+      decode_log_event_to_json_object: "true"
