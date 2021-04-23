@@ -1,9 +1,11 @@
 package com.github.saleco.interview.calendar.api.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.github.saleco.interview.calendar.api.utils.InterviewCalendarAPIResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -153,6 +155,17 @@ public class ExceptionHandlerController {
 			InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(status.value(), message);
 			log.error(message);
 			return ResponseEntity.status(status).body(response);
+		}
+
+		if(ex instanceof HttpMessageNotReadableException) {
+			if(ex.getCause() instanceof InvalidFormatException) {
+				InvalidFormatException invalidFormatException = (InvalidFormatException) ex.getCause();
+				String message = invalidFormatException.getMessage();
+				InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(HttpStatus.BAD_REQUEST.value(), message);
+				log.error(message);
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(response);
+			}
+
 		}
 
 		log.error(

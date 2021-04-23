@@ -2,6 +2,7 @@ package com.github.saleco.interview.calendar.api.user.service;
 
 import com.github.saleco.interview.calendar.api.enums.UserType;
 import com.github.saleco.interview.calendar.api.service.AbstractService;
+import com.github.saleco.interview.calendar.api.user.dto.CreateUserDto;
 import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import com.github.saleco.interview.calendar.api.user.mapper.UserMapper;
 import com.github.saleco.interview.calendar.api.user.repository.UserRepository;
@@ -20,13 +21,6 @@ public class UserServiceImpl extends AbstractService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDto save(UserDto userDto) {
-        log.debug("Creating user {}", userDto);
-        return userMapper
-          .modelToDto(userRepository.save(userMapper.dtoToModel(userDto)));
-    }
-
-    @Override
     public Page<UserDto> getUsersByType(int page, int size, UserType userType) {
         log.debug("Searching users by page {}, pageSize {} and type {}.", page, size, userType);
 
@@ -34,6 +28,20 @@ public class UserServiceImpl extends AbstractService implements UserService {
           userRepository
             .findALlByUserType(userType, PageRequest.of(page, size))
             .map(userMapper::modelToDto);
+    }
+
+    @Override
+    public UserDto createUser(CreateUserDto createUserDto) {
+        log.debug("Creating user {}", createUserDto);
+
+        UserDto userDto = UserDto
+          .builder()
+          .userType(createUserDto.getUserType())
+          .name(createUserDto.getName())
+          .build();
+
+        return userMapper
+          .modelToDto(userRepository.save(userMapper.dtoToModel(userDto)));
     }
 
 }

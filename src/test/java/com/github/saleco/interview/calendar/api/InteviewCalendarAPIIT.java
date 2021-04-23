@@ -6,6 +6,7 @@ import com.github.saleco.interview.calendar.api.agenda.dto.CreateAgendaDto;
 import com.github.saleco.interview.calendar.api.agenda.dto.SearchInterviewsAvailabilityDto;
 import com.github.saleco.interview.calendar.api.agenda.service.AgendaService;
 import com.github.saleco.interview.calendar.api.enums.UserType;
+import com.github.saleco.interview.calendar.api.user.dto.CreateUserDto;
 import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import com.github.saleco.interview.calendar.api.user.service.UserService;
 import org.assertj.core.util.Lists;
@@ -211,8 +212,8 @@ public class InteviewCalendarAPIIT {
     }
 
     protected UserDto createUser(String name, UserType userType) {
-        return userService.save(
-          UserDto.builder().name(name).userType(userType).build()
+        return userService.createUser(
+          CreateUserDto.builder().name(name).userType(userType).build()
         );
     }
 

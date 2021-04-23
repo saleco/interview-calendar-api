@@ -1,8 +1,10 @@
 package com.github.saleco.interview.calendar.api.user.controller;
 
 import com.github.saleco.interview.calendar.api.enums.UserType;
+import com.github.saleco.interview.calendar.api.user.dto.CreateUserDto;
 import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import com.github.saleco.interview.calendar.api.user.service.UserService;
+import com.github.saleco.interview.calendar.api.utils.InterviewCalendarAPIResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,10 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/ap1/v1/users")
@@ -40,6 +41,19 @@ public class UsersController {
                                   @Parameter(description = "Page size. By default 20")
                                   @RequestParam(defaultValue = "20") int size) {
         return userService.getUsersByType(page, size, userType);
+    }
+
+    @Operation(summary = "Create User",
+      description = "As an Interviewer / Candidate, I would like to create an user")
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "The User were successfully created.",
+        content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))),
+      @ApiResponse(responseCode = "400", description = "Invalid parameter",
+        content = @Content(schema = @Schema(implementation = InterviewCalendarAPIResponse.class)))})
+    public UserDto createUser(
+      @RequestBody @Valid CreateUserDto createUserDto) {
+        return userService.createUser(createUserDto);
     }
 }
 

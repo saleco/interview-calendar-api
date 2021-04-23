@@ -5,6 +5,7 @@ import com.github.saleco.interview.calendar.api.agenda.dto.AgendaDto;
 import com.github.saleco.interview.calendar.api.agenda.dto.SearchInterviewsAvailabilityDto;
 import com.github.saleco.interview.calendar.api.agenda.service.AgendaService;
 import com.github.saleco.interview.calendar.api.enums.UserType;
+import com.github.saleco.interview.calendar.api.user.dto.CreateUserDto;
 import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import com.github.saleco.interview.calendar.api.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class InterviewCalendarAPILoader implements CommandLineRunner {
 
         //creating interviewers
         for (int i = 0; i < 10; i++) {
-            UserDto userDto = userService.save(createUser(UserType.INTERVIEWER));
+            UserDto userDto = userService.createUser(createUser(UserType.INTERVIEWER));
 
             //creates an agenda for the next 30 days
             //not considering february
@@ -51,7 +52,7 @@ public class InterviewCalendarAPILoader implements CommandLineRunner {
 
         //creating interviewers
         for (int i = 0; i < 10; i++) {
-            UserDto userDto = userService.save(createUser(UserType.CANDIDATE));
+            UserDto userDto = userService.createUser(createUser(UserType.CANDIDATE));
 
             //creates an agenda for each working day until 30th of current month / each hour of the day from 9am to 6pm
             //not considering february
@@ -95,8 +96,8 @@ public class InterviewCalendarAPILoader implements CommandLineRunner {
           .build();
     }
 
-    private UserDto createUser(UserType userType) {
-        return UserDto
+    private CreateUserDto createUser(UserType userType) {
+        return CreateUserDto
           .builder()
           .name(faker.name().fullName())
           .userType(userType)
