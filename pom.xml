@@ -211,12 +211,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.2</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/*Dto.*</exclude>
-                        <exclude>**/*InterviewCalendarAPIApplication.*</exclude>
-                    </excludes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>before-unit-test-execution</id>
