@@ -34,14 +34,19 @@ public class UserServiceImpl extends AbstractService implements UserService {
     public UserDto createUser(CreateUserDto createUserDto) {
         log.debug("Creating user {}", createUserDto);
 
-        UserDto userDto = UserDto
+        UserDto userDto = getUserDtoFromCreateUserDto(createUserDto);
+
+        return userMapper
+          .modelToDto(userRepository.save(userMapper.dtoToModel(userDto)));
+    }
+
+    @Override
+    public UserDto getUserDtoFromCreateUserDto(CreateUserDto createUserDto) {
+        return UserDto
           .builder()
           .userType(createUserDto.getUserType())
           .name(createUserDto.getName())
           .build();
-
-        return userMapper
-          .modelToDto(userRepository.save(userMapper.dtoToModel(userDto)));
     }
 
 }

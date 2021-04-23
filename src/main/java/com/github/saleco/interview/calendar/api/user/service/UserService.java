@@ -8,4 +8,6 @@ import org.springframework.data.domain.Page;
 public interface UserService {
     Page<UserDto> getUsersByType(int page, int size, UserType userType);
     UserDto createUser(CreateUserDto createUserDto);
+    UserDto getUserDtoFromCreateUserDto(CreateUserDto createUserDto);
 }
+
