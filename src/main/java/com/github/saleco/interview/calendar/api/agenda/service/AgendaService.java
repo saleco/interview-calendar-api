@@ -23,4 +23,6 @@ public interface AgendaService {
     void validatesUsersInputWithUserType(List<Long> userIds, UserType userType);
     List<AgendaDto> createAvailability(CreateAgendaDto createAgendaDto);
     void validatesUserInputWithUserType(Long userId, UserType userType);
+    void validateAgenda(AgendaDto agendaDto);
+    List<AgendaDto> getAgendaDtosFromAvailabilities(List<AvailabilityDto> availabilities, Long userId);
 }

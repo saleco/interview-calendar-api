@@ -12,7 +12,6 @@ import com.github.saleco.interview.calendar.api.exception.NotFoundException;
 import com.github.saleco.interview.calendar.api.exception.ValidationException;
 import com.github.saleco.interview.calendar.api.mapper.DateMapper;
 import com.github.saleco.interview.calendar.api.service.AbstractService;
-import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import com.github.saleco.interview.calendar.api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,16 +65,6 @@ public class AgendaServiceImpl extends AbstractService implements AgendaService 
           .stream().map(agendaMapper::modelToDto).collect(Collectors.toList());
     }
 
-
-    private void validateAgenda(AgendaDto agendaDto) {
-        Example<Agenda> example = Example.of(agendaMapper.dtoToModel(agendaDto));
-        if(agendaRepository.exists(example)){
-            throw new ValidationException(String.format("Agenda already exists for %s", agendaDto));
-        }
-
-        validateAvailability(agendaDto.getStart(), agendaDto.getEnd());
-    }
-
     @Override
     public Page<AgendaDto> getAvailability(SearchInterviewsAvailabilityDto searchInterviewsAvailabilityDto) {
         log.debug("Searching availability with: {}", searchInterviewsAvailabilityDto);
@@ -117,7 +106,17 @@ public class AgendaServiceImpl extends AbstractService implements AgendaService 
         return this.createAgendas(agendaDtos);
     }
 
-    private List<AgendaDto> getAgendaDtosFromAvailabilities(List<AvailabilityDto> availabilities, Long userId) {
+    @Override
+    public void validateAgenda(AgendaDto agendaDto) {
+        Example<Agenda> example = Example.of(agendaMapper.dtoToModel(agendaDto));
+        if(agendaRepository.exists(example)){
+            throw new ValidationException(String.format("Agenda already exists for %s", agendaDto));
+        }
+
+        validateAvailability(agendaDto.getStart(), agendaDto.getEnd());
+    }
+
+    public List<AgendaDto> getAgendaDtosFromAvailabilities(List<AvailabilityDto> availabilities, Long userId) {
         List<AgendaDto> agendaDtos = new ArrayList<>();
 
         availabilities.forEach(availability -> {
