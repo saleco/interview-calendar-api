@@ -47,7 +47,7 @@ hour until the beginning of the next hour. For example, a time span between 9am 
 ### Running the application 
 `mvn clean install`
 
-`mvn springboot:run -Dspring-boot.run.profiles=local`
+`mvn spring-boot:run -Dspring-boot.run.profiles=local`
 
 ### Running Docker Container
 ### Requirements
