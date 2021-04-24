@@ -290,9 +290,13 @@
                         <exclude>**/*Dto*</exclude>
                         <exclude>**/*Builder*</exclude>
                         <exclude>**/*Mapper*</exclude>
-                        <exclude>**/*Exception*</exclude>
+                        <exclude>com/github/saleco/interview/calendar/api/exception/BusinessException*</exclude>
+                        <exclude>com/github/saleco/interview/calendar/api/exception/InterviewCalendarAPIException*</exclude>
+                        <exclude>com/github/saleco/interview/calendar/api/exception/NotFoundException*</exclude>
+                        <exclude>com/github/saleco/interview/calendar/api/exception/ValidationException*</exclude>
                         <exclude>**/*InterviewCalendarAPIApplication*</exclude>
-                        <exclude>**/*ExceptionHandlerController*</exclude>
+                        <exclude>com/github/saleco/interview/calendar/api/agenda/model/Agenda*</exclude>
+                        <exclude>com/github/saleco/interview/calendar/api/user/model/User*</exclude>
                     </excludes>
                 </configuration>
 
