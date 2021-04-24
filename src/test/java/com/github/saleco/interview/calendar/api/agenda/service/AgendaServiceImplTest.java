@@ -324,6 +324,7 @@ class AgendaServiceImplTest {
 
     @Test
     void createAvailability() {
+
     }
 
     @Test

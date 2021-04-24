@@ -5,6 +5,10 @@
 ## Description 
 API designed to match interviewers and candidates timetable
 
+This API provides an initial H2 in memory database data with Interviewers, Candidates and Agendas.
+
+Find out more [here](https://github.com/saleco/interview-calendar-api/blob/master/src/main/java/com/github/saleco/interview/calendar/api/boostrap/InterviewCalendarAPILoader.java)
+
 ## Assumptions
 An interview slot is a 1-hour period of time that spreads from the beginning of any 
 hour until the beginning of the next hour. For example, a time span between 9am and

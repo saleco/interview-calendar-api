@@ -39,140 +39,162 @@ public class ExceptionHandlerController {
 			BusinessException.class, Exception.class })
 	protected ResponseEntity<Object> handleBusinessException(WebRequest request, Exception ex) {
 		if (ex instanceof ConstraintViolationException) {
-			StringBuilder message = new StringBuilder(THERE_IS_A_VALIDATION_RULE_THAT_PREVENTS_THE_REQUEST_SEE_RULE);
-			ConstraintViolationException cve = (ConstraintViolationException) ex;
-			for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
-				ConstraintDescriptor<? extends Annotation> descriptor = violation.getConstraintDescriptor();
-				Annotation annotation = descriptor.getAnnotation();
-				String annotationName = annotation.annotationType().getCanonicalName();
-				if (annotationName != null) {
-					if (annotationName.endsWith(NOT_NULL)) {
-						message.append(START_TAG + violation.getPropertyPath() + ",mandatory" + END_TAG);
-					}
-					if (annotationName.endsWith(SIZE)) {
-						String min = "" + descriptor.getAttributes().get("min");
-						String max = "" + descriptor.getAttributes().get("max");
-						message.append(START_TAG + violation.getPropertyPath() + ",size," + min + "-" + max + END_TAG);
-					}
-					if (annotationName.endsWith(PATTERN)) {
-						String pattern = "" + descriptor.getAttributes().get("regexp");
-						message.append(START_TAG + violation.getPropertyPath() + ",pattern," + pattern + END_TAG);
-					}
-				}
-			}
-
-			log.info("ValidationException: {}", message);
-			ex = new ValidationException(message.toString());
-
+			ex = handleContraintViolationException(ex);
 		}
 
 		if (ex instanceof MethodArgumentNotValidException) {
-			StringBuilder message = new StringBuilder(THERE_IS_A_VALIDATION_RULE_THAT_PREVENTS_THE_REQUEST_SEE_RULE);
-			MethodArgumentNotValidException nve = (MethodArgumentNotValidException) ex;
-			BindingResult bindingResult = nve.getBindingResult();
-			for (ObjectError error : bindingResult.getAllErrors()) {
-				String code = error.getCode();
-				String f = error.getCodes()[1];
-				String field = f.substring(f.indexOf('.') + 1);
-
-				if (NOT_NULL.equals(code)) {
-					message.append(START_TAG + field + ",mandatory" + END_TAG);
-				}
-				if ("Size".equals(code)) {
-					String min = "" + error.getArguments()[2];
-					String max = "" + error.getArguments()[1];
-					message.append(START_TAG + field + ",size," + min + "-" + max + END_TAG);
-				}
-				if (PATTERN.equals(code)) {
-					String full = error.getDefaultMessage();
-					String[] parts = full.split("\"");
-					String pattern = "";
-					if (parts.length > 1) {
-						pattern = parts[1];
-					}
-					message.append(START_TAG + field + ",pattern," + pattern + END_TAG);
-				}
-				if("Min".equals(code)){
-					String min = "" + error.getArguments()[1];
-
-					message.append(START_TAG + field + ",min," + min + END_TAG);
-				}
-			}
-
-			log.info("ValidationException: {}", message);
-			ex = new ValidationException(message.toString());
+			ex = handleMethodArgumentNotValidException(ex);
 		}
 
 		if (ex instanceof BindException) {
-			StringBuilder message = new StringBuilder(THERE_IS_A_VALIDATION_RULE_THAT_PREVENTS_THE_REQUEST_SEE_RULE);
-			BindException nve = (BindException) ex;
-			BindingResult bindingResult = nve.getBindingResult();
-			for (ObjectError error : bindingResult.getAllErrors()) {
-				String code = error.getCode();
-				String f = error.getCodes()[1];
-				String field = f.substring(f.indexOf('.') + 1);
-
-				if (NOT_NULL.equals(code)) {
-					message.append(START_TAG + field + ",mandatory" + END_TAG);
-				}
-				if ("Size".equals(code)) {
-					String min = "" + error.getArguments()[2];
-					String max = "" + error.getArguments()[1];
-					message.append(START_TAG + field + ",size," + min + "-" + max + END_TAG);
-				}
-				if (PATTERN.equals(code)) {
-					String full = error.getDefaultMessage();
-					String[] parts = full.split("\"");
-					String pattern = "";
-					if (parts.length > 1) {
-						pattern = parts[1];
-					}
-					message.append(START_TAG + field + ",pattern," + pattern + END_TAG);
-				}
-				if("Min".equals(code)){
-					String min = "" + error.getArguments()[1];
-
-					message.append(START_TAG + field + ",min," + min + END_TAG);
-				}
-			}
-
-			log.info(VALIDATION_EXCEPTION_MESSAGE, message, ex);
-			ex = new ValidationException(message.toString());
+			ex = handleBindException(ex);
 		}
 
 		if (ex instanceof InterviewCalendarAPIException) {
-			HttpStatus status = ex.getClass().getAnnotation(ResponseStatus.class).value();
-			String message = ((InterviewCalendarAPIException) ex).getMessage();
-			InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(status.value(), message);
-			log.error(message);
-			return ResponseEntity.status(status).body(response);
+			return handleInterviewCalendarAPIException(ex);
 		}
 
 		if(ex instanceof UndeclaredThrowableException && ((UndeclaredThrowableException) ex).getUndeclaredThrowable().getCause() instanceof InterviewCalendarAPIException){
-			InterviewCalendarAPIException exception = (InterviewCalendarAPIException) ((UndeclaredThrowableException) ex).getUndeclaredThrowable().getCause();
-			HttpStatus status = exception.getClass().getAnnotation(ResponseStatus.class).value();
-			String message = exception.getMessage();
-			InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(status.value(), message);
-			log.error(message);
-			return ResponseEntity.status(status).body(response);
+			return handleInterviewCalendarAPIExceptionUndeclared((UndeclaredThrowableException) ex);
 		}
 
-		if(ex instanceof HttpMessageNotReadableException) {
-			if(ex.getCause() instanceof InvalidFormatException) {
-				InvalidFormatException invalidFormatException = (InvalidFormatException) ex.getCause();
-				String message = invalidFormatException.getMessage();
-				InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(HttpStatus.BAD_REQUEST.value(), message);
-				log.error(message);
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(response);
-			}
-
+		if(ex instanceof HttpMessageNotReadableException && ex.getCause() instanceof InvalidFormatException) {
+			return handleInvalidFormatException(ex);
 		}
 
-		log.error(
-				"Unknown Exception detected in ExceptionHandlerController", ex);
+		log.error("Unknown Exception detected in ExceptionHandlerController", ex);
 
 		InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(HttpStatus.BAD_REQUEST.value(), "We are sorry, something unexpected happened. Please try it again later.");
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(response);
+	}
+
+	private ResponseEntity<Object> handleInvalidFormatException(Exception ex) {
+		InvalidFormatException invalidFormatException = (InvalidFormatException) ex.getCause();
+		String message = invalidFormatException.getMessage();
+		InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(HttpStatus.BAD_REQUEST.value(), message);
+		log.error(message);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(response);
+	}
+
+	private ResponseEntity<Object> handleInterviewCalendarAPIExceptionUndeclared(UndeclaredThrowableException ex) {
+		InterviewCalendarAPIException exception = (InterviewCalendarAPIException) ex.getUndeclaredThrowable().getCause();
+		HttpStatus status = exception.getClass().getAnnotation(ResponseStatus.class).value();
+		String message = exception.getMessage();
+		InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(status.value(), message);
+		log.error(message);
+		return ResponseEntity.status(status).body(response);
+	}
+
+	private ResponseEntity<Object> handleInterviewCalendarAPIException(Exception ex) {
+		HttpStatus status = ex.getClass().getAnnotation(ResponseStatus.class).value();
+		String message = ((InterviewCalendarAPIException) ex).getMessage();
+		InterviewCalendarAPIResponse response = new InterviewCalendarAPIResponse(status.value(), message);
+		log.error(message);
+		return ResponseEntity.status(status).body(response);
+	}
+
+	private Exception handleBindException(Exception ex) {
+		StringBuilder message = new StringBuilder(THERE_IS_A_VALIDATION_RULE_THAT_PREVENTS_THE_REQUEST_SEE_RULE);
+		BindException nve = (BindException) ex;
+		BindingResult bindingResult = nve.getBindingResult();
+		for (ObjectError error : bindingResult.getAllErrors()) {
+			String code = error.getCode();
+			String f = error.getCodes()[1];
+			String field = f.substring(f.indexOf('.') + 1);
+
+			if (NOT_NULL.equals(code)) {
+				message.append(START_TAG + field + ",mandatory" + END_TAG);
+			}
+			if ("Size".equals(code)) {
+				String min = "" + error.getArguments()[2];
+				String max = "" + error.getArguments()[1];
+				message.append(START_TAG + field + ",size," + min + "-" + max + END_TAG);
+			}
+			if (PATTERN.equals(code)) {
+				String full = error.getDefaultMessage();
+				String[] parts = full.split("\"");
+				String pattern = "";
+				if (parts.length > 1) {
+					pattern = parts[1];
+				}
+				message.append(START_TAG + field + ",pattern," + pattern + END_TAG);
+			}
+			if("Min".equals(code)){
+				String min = "" + error.getArguments()[1];
+
+				message.append(START_TAG + field + ",min," + min + END_TAG);
+			}
+		}
+
+		log.info(VALIDATION_EXCEPTION_MESSAGE, message, ex);
+		ex = new ValidationException(message.toString());
+		return ex;
+	}
+
+	private Exception handleMethodArgumentNotValidException(Exception ex) {
+		StringBuilder message = new StringBuilder(THERE_IS_A_VALIDATION_RULE_THAT_PREVENTS_THE_REQUEST_SEE_RULE);
+		MethodArgumentNotValidException nve = (MethodArgumentNotValidException) ex;
+		BindingResult bindingResult = nve.getBindingResult();
+		for (ObjectError error : bindingResult.getAllErrors()) {
+			String code = error.getCode();
+			String f = error.getCodes()[1];
+			String field = f.substring(f.indexOf('.') + 1);
+
+			if (NOT_NULL.equals(code)) {
+				message.append(START_TAG + field + ",mandatory" + END_TAG);
+			}
+			if ("Size".equals(code)) {
+				String min = "" + error.getArguments()[2];
+				String max = "" + error.getArguments()[1];
+				message.append(START_TAG + field + ",size," + min + "-" + max + END_TAG);
+			}
+			if (PATTERN.equals(code)) {
+				String full = error.getDefaultMessage();
+				String[] parts = full.split("\"");
+				String pattern = "";
+				if (parts.length > 1) {
+					pattern = parts[1];
+				}
+				message.append(START_TAG + field + ",pattern," + pattern + END_TAG);
+			}
+			if("Min".equals(code)){
+				String min = "" + error.getArguments()[1];
+
+				message.append(START_TAG + field + ",min," + min + END_TAG);
+			}
+		}
+
+		log.info("ValidationException: {}", message);
+		ex = new ValidationException(message.toString());
+		return ex;
+	}
+
+	private Exception handleContraintViolationException(Exception ex) {
+		StringBuilder message = new StringBuilder(THERE_IS_A_VALIDATION_RULE_THAT_PREVENTS_THE_REQUEST_SEE_RULE);
+		ConstraintViolationException cve = (ConstraintViolationException) ex;
+		for (ConstraintViolation<?> violation : cve.getConstraintViolations()) {
+			ConstraintDescriptor<? extends Annotation> descriptor = violation.getConstraintDescriptor();
+			Annotation annotation = descriptor.getAnnotation();
+			String annotationName = annotation.annotationType().getCanonicalName();
+			if (annotationName != null) {
+				if (annotationName.endsWith(NOT_NULL)) {
+					message.append(START_TAG + violation.getPropertyPath() + ",mandatory" + END_TAG);
+				}
+				if (annotationName.endsWith(SIZE)) {
+					String min = "" + descriptor.getAttributes().get("min");
+					String max = "" + descriptor.getAttributes().get("max");
+					message.append(START_TAG + violation.getPropertyPath() + ",size," + min + "-" + max + END_TAG);
+				}
+				if (annotationName.endsWith(PATTERN)) {
+					String pattern = "" + descriptor.getAttributes().get("regexp");
+					message.append(START_TAG + violation.getPropertyPath() + ",pattern," + pattern + END_TAG);
+				}
+			}
+		}
+
+		log.info("ValidationException: {}", message);
+		ex = new ValidationException(message.toString());
+		return ex;
 	}
 }
