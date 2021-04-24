@@ -44,12 +44,17 @@ hour until the beginning of the next hour. For example, a time span between 9am 
 ### Pre-requisites
 - jdk 11
 - maven 3
-### Running the application 
+### Running the application Locally
 `mvn clean install`
 
 `mvn spring-boot:run -Dspring-boot.run.profiles=local`
 
-### Running Docker Container
+### Accessing the API Locally
+| Service  |      Url                |  Description                             |
+|----------|:-----------------------:|-----------------------------------------:|
+| API      | [Swagger UI](http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config) | Open API 3 Description |
+
+## Running Docker Containers
 ### Requirements
 - Docker
 
