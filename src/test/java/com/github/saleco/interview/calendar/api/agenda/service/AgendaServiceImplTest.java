@@ -1,6 +1,7 @@
 package com.github.saleco.interview.calendar.api.agenda.service;
 
 import com.github.saleco.interview.calendar.api.agenda.dto.AgendaDto;
+import com.github.saleco.interview.calendar.api.agenda.dto.AvailabilityDto;
 import com.github.saleco.interview.calendar.api.agenda.dto.CreateAgendaDto;
 import com.github.saleco.interview.calendar.api.agenda.dto.SearchInterviewsAvailabilityDto;
 import com.github.saleco.interview.calendar.api.agenda.mapper.AgendaMapper;
@@ -10,6 +11,7 @@ import com.github.saleco.interview.calendar.api.enums.UserType;
 import com.github.saleco.interview.calendar.api.exception.NotFoundException;
 import com.github.saleco.interview.calendar.api.exception.ValidationException;
 import com.github.saleco.interview.calendar.api.mapper.DateMapper;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +28,8 @@ import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
@@ -287,12 +292,12 @@ class AgendaServiceImplTest {
 
         SearchInterviewsAvailabilityDto searchInterviewsAvailabilityDto =
           SearchInterviewsAvailabilityDto
-          .builder()
-          .candidateId(1L)
-          .interviewerIds(Collections.emptyList())
-          .startingFrom(OffsetDateTime.now())
-          .endingAt(OffsetDateTime.now().plusDays(5))
-          .build();
+            .builder()
+            .candidateId(1L)
+            .interviewerIds(Collections.emptyList())
+            .startingFrom(OffsetDateTime.now())
+            .endingAt(OffsetDateTime.now().plusDays(5))
+            .build();
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> agendaServiceSpy.getAvailability(searchInterviewsAvailabilityDto));
 
@@ -353,7 +358,7 @@ class AgendaServiceImplTest {
 
     @DisplayName("Given Create Agenda DTO When createAvailability then validateUserInput throws IllegalArgumentsException")
     @Test
-    void givenCreateAgendaDtoWhenCreateAvailabilityThenShouldThrowIllegalArgumentsException() {
+    void givenCreateAgendaDtoWhenCreateAvailabilityValidateUserInputThenShouldThrowIllegalArgumentsException() {
         doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUserInput(1L);
 
         CreateAgendaDto createAgendaDto = CreateAgendaDto.builder().userId(1L).build();
@@ -369,7 +374,7 @@ class AgendaServiceImplTest {
 
     @DisplayName("Given Create Agenda DTO When createAvailability then validateUserInput throws NotFoundException")
     @Test
-    void givenCreateAgendaDtoWhenCreateAvailabilityThenShouldThrowINotFoundException() {
+    void givenCreateAgendaDtoWhenCreateAvailabilityValidateUserInputThenShouldThrowINotFoundException() {
         doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInput(1L);
 
         CreateAgendaDto createAgendaDto = CreateAgendaDto.builder().userId(1L).build();
@@ -383,41 +388,220 @@ class AgendaServiceImplTest {
         then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
 
-//    @DisplayName("Given Create Agenda DTO When createAvailability then validateUserInput throws NotFoundException")
-//    @Test
-//    void givenCreateAgendaDtoWhenCreateAvailabilityThenShouldThrowINotFoundException() {
-//        doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInput(1L);
-//        Assertions.assertThrows(NotFoundException.class,
-//          () -> agendaServiceSpy.createAvailability(CreateAgendaDto.builder().userId(1L).build()));
-//
-//        then(agendaRepository).shouldHaveNoInteractions();
-//        then(agendaMapper).shouldHaveNoInteractions();
-//        then(agendaServiceSpy).should(times(1)).validatesUserInput(anyLong());
-//        then(agendaServiceSpy).should(times(1)).createAvailability(any(CreateAgendaDto.class));
-//        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
-//    }
-
+    @DisplayName("Given Create Agenda DTO When createAvailability then validateAvailabilities throws IllegalArgumentException")
     @Test
-    void validateAvailabilities() {
+    void givenCreateAgendaDtoWhenCreateAvailabilityValidateAvailabilitiesThenShouldThrowIllegalArgumentException() {
+        CreateAgendaDto createAgendaDto =
+          CreateAgendaDto
+            .builder()
+            .userId(1L)
+            .availabilities(Collections.singletonList(AvailabilityDto.builder().build()))
+            .build();
+
+        doNothing().when(agendaServiceSpy).validatesUserInput(createAgendaDto.getUserId());
+
+        doThrow(IllegalArgumentException.class)
+          .when(agendaServiceSpy).validateAvailabilities(createAgendaDto.getAvailabilities());
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+          () -> agendaServiceSpy.createAvailability(createAgendaDto));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInput(anyLong());
+        then(agendaServiceSpy).should(times(1)).validateAvailabilities(anyList());
+        then(agendaServiceSpy).should(times(1)).createAvailability(any(CreateAgendaDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
 
+    @DisplayName("Given Create Agenda DTO When createAvailability then validateAvailabilities throws ValidationException")
     @Test
-    void validateAvailability() {
+    void givenCreateAgendaDtoWhenCreateAvailabilityValidateAvailabilitiesThenShouldValidationException() {
+        CreateAgendaDto createAgendaDto =
+          CreateAgendaDto
+            .builder()
+            .userId(1L)
+            .availabilities(Collections.singletonList(AvailabilityDto.builder().build()))
+            .build();
+
+        doNothing().when(agendaServiceSpy).validatesUserInput(createAgendaDto.getUserId());
+
+        doThrow(ValidationException.class)
+          .when(agendaServiceSpy).validateAvailabilities(createAgendaDto.getAvailabilities());
+
+        Assertions.assertThrows(ValidationException.class,
+          () -> agendaServiceSpy.createAvailability(createAgendaDto));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInput(anyLong());
+        then(agendaServiceSpy).should(times(1)).validateAvailabilities(anyList());
+        then(agendaServiceSpy).should(times(1)).createAvailability(any(CreateAgendaDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
 
+    @DisplayName("Given Create Agenda DTO When createAvailability then Should return List of AgendaDto")
     @Test
-    void validatesUserInput() {
+    void givenCreateAgendaDtoWhenCreateAvailabilityThenShouldReturnAgendaDtoList() {
+        CreateAgendaDto createAgendaDto =
+          CreateAgendaDto
+            .builder()
+            .userId(1L)
+            .availabilities(Collections.singletonList(AvailabilityDto.builder().build()))
+            .build();
+
+        List<AgendaDto> agendaDtos = Collections.singletonList(AgendaDto.builder().build());
+
+        doNothing().when(agendaServiceSpy).validatesUserInput(createAgendaDto.getUserId());
+        doNothing().when(agendaServiceSpy).validateAvailabilities(createAgendaDto.getAvailabilities());
+
+        doReturn(agendaDtos)
+          .when(agendaServiceSpy).getAgendaDtosFromAvailabilities(createAgendaDto.getAvailabilities(), createAgendaDto.getUserId());
+
+        doReturn(agendaDtos).when(agendaServiceSpy).createAgendas(agendaDtos);
+
+        List<AgendaDto> agendaDtosReturned = agendaServiceSpy.createAvailability(createAgendaDto);
+
+        Assertions.assertAll(
+          () -> assertThat(agendaDtosReturned).isNotNull(),
+          () -> assertThat(agendaDtosReturned).isNotEmpty()
+        );
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInput(anyLong());
+        then(agendaServiceSpy).should(times(1)).validateAvailabilities(anyList());
+        then(agendaServiceSpy).should(times(1)).getAgendaDtosFromAvailabilities(anyList(), anyLong());
+        then(agendaServiceSpy).should(times(1)).createAgendas(anyList());
+        then(agendaServiceSpy).should(times(1)).createAvailability(any(CreateAgendaDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
 
+
+    @DisplayName("Given Existing AgendaDto When Validate Agenda then should throw ValidationException")
     @Test
-    void validatesPeriodInput() {
+    void givenExistingAgendaDtoWhenValidateAgendaThenShouldThrowValidationException() {
+        Agenda agenda = Agenda.builder().build();
+        AgendaDto agendaDto = AgendaDto.builder().build();
+
+        doReturn(agenda).when(agendaMapper).dtoToModel(agendaDto);
+
+        doReturn(true).when(agendaRepository).exists(any(Example.class));
+
+        Assertions.assertThrows(ValidationException.class, () -> agendaService.validateAgenda(agendaDto));
+
+        then(agendaRepository).should(times(1)).exists(any(Example.class));
+        then(agendaMapper).should(times(1)).dtoToModel(any(AgendaDto.class));
+        then(agendaRepository).shouldHaveNoMoreInteractions();
     }
 
+    @DisplayName("Given AgendaDto When Validate Agenda Validate Availability then should throw IllegalArgumentException")
     @Test
-    void validatesUsersInputWithUserType() {
+    void givenAgendaDtoWhenValidateAgendaValidateAvailabilityThenShouldThrowIllegalArgumentException() {
+        Agenda agenda = Agenda.builder().build();
+        AgendaDto agendaDto = AgendaDto.builder()
+          .start(OffsetDateTime.now())
+          .end(OffsetDateTime.now().plusDays(5))
+          .build();
+
+        doReturn(agenda).when(agendaMapper).dtoToModel(agendaDto);
+        doReturn(false).when(agendaRepository).exists(any(Example.class));
+        doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validateAvailability(any(OffsetDateTime.class), any(OffsetDateTime.class));
+
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> agendaServiceSpy.validateAgenda(agendaDto));
+
+        then(agendaServiceSpy).should(times(1)).validateAvailability(any(OffsetDateTime.class), any(OffsetDateTime.class));
+        then(agendaServiceSpy).should(times(1)).validateAgenda(any(AgendaDto.class));
+        then(agendaRepository).should(times(1)).exists(any(Example.class));
+        then(agendaMapper).should(times(1)).dtoToModel(any(AgendaDto.class));
+        then(agendaRepository).shouldHaveNoMoreInteractions();
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
 
+    @DisplayName("Given AgendaDto When Validate Agenda Validate Availability then should throw ValidationException")
     @Test
-    void validatesUserInputWithUserType() {
+    void givenAgendaDtoWhenValidateAgendaValidateAvailabilityThenShouldThrowValidationException() {
+        Agenda agenda = Agenda.builder().build();
+        AgendaDto agendaDto = AgendaDto.builder()
+          .start(OffsetDateTime.now())
+          .end(OffsetDateTime.now().plusDays(5))
+          .build();
+
+        doReturn(agenda).when(agendaMapper).dtoToModel(agendaDto);
+        doReturn(false).when(agendaRepository).exists(any(Example.class));
+        doThrow(ValidationException.class).when(agendaServiceSpy).validateAvailability(any(OffsetDateTime.class), any(OffsetDateTime.class));
+
+
+        Assertions.assertThrows(ValidationException.class, () -> agendaServiceSpy.validateAgenda(agendaDto));
+
+        then(agendaServiceSpy).should(times(1)).validateAvailability(any(OffsetDateTime.class), any(OffsetDateTime.class));
+        then(agendaServiceSpy).should(times(1)).validateAgenda(any(AgendaDto.class));
+        then(agendaRepository).should(times(1)).exists(any(Example.class));
+        then(agendaMapper).should(times(1)).dtoToModel(any(AgendaDto.class));
+        then(agendaRepository).shouldHaveNoMoreInteractions();
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
+
+    @DisplayName("Given Empty List of AvailabilityDto and userId When getAgendaDtosFromAvailabilities then should return Empty List")
+    @Test
+    void givenEmptyAvailabilityDtoListAndUserIdWhenGetAgendaDtosFromAvailabilitiesThenShouldReturnEmptyList() {
+        assertThat(agendaService.getAgendaDtosFromAvailabilities(Lists.emptyList(), null)).isEmpty();
+    }
+
+    @DisplayName("Given List of AvailabilityDto and userId When getAgendaDtosFromAvailabilities then should return AgendaDto List")
+    @Test
+    void givenAvailabilityDtoListAndUserIdWhenGetAgendaDtosFromAvailabilitiesThenShouldReturnAgendaDtoList() {
+
+        AvailabilityDto availabilityDto =
+          AvailabilityDto.builder().start(LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)).end(LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(4)).build();
+
+        List<AgendaDto> agendaDtos = agendaService.getAgendaDtosFromAvailabilities(Collections.singletonList(availabilityDto), null);
+
+        Assertions.assertAll(
+          () -> assertThat(agendaDtos).isNotNull(),
+          () -> assertThat(agendaDtos).isNotEmpty(),
+          () -> assertThat(agendaDtos).hasSize(4)
+        );
+    }
+
+
+    @DisplayName("Given Null Start or End When validateAvailability then should throw IllegalArgumentException")
+    @Test
+    void givenNullStartOrEndWhenValidateAvailabilityThenShouldThrowIllegalArgumentException() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> agendaService.validateAvailability(null, null));
+    }
+
+    @DisplayName("Given Invalid Minute Start or End When validateAvailability then should throw ValidationException")
+    @Test
+    void givenInvalidStartOrEndWhenValidateAvailabilityThenShouldThrowValidationException() {
+        Assertions.assertThrows(ValidationException.class, () ->
+          agendaService.validateAvailability(
+            OffsetDateTime.of(2021, 2, 2, 5, 15, 0, 0, ZoneOffset.UTC),
+            OffsetDateTime.now()));
+    }
+
+    @DisplayName("Given Start after End When validateAvailability then should throw ValidationException")
+    @Test
+    void givenStartAfterEndWhenValidateAvailabilityThenShouldThrowValidationException() {
+        Assertions.assertThrows(ValidationException.class, () ->
+          agendaService.validateAvailability(
+            OffsetDateTime.of(2021, 2, 2, 5, 0, 0, 0, ZoneOffset.UTC),
+            OffsetDateTime.of(2021, 2, 2, 4, 0, 0, 0, ZoneOffset.UTC)));
+    }
+
+    @DisplayName("Given Null Start or End When validatesPeriodInput then should throw IllegalArgumentException")
+    @Test
+    void givenNullStartOrEndWhenValidatesPeriodInputThenShouldThrowIllegalArgumentException() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> agendaService.validatesPeriodInput(null, null));
+    }
+
+    @DisplayName("Given days between Start and End greater then 5 When validatesPeriodInput then should throw ValidationException")
+    @Test
+    void givenDaysBetweenStartAndEndGreaterThenFiveWhenValidatesPeriodInputThenShouldThrowValidationException() {
+        Assertions.assertThrows(ValidationException.class, () -> agendaService.validatesPeriodInput(
+          OffsetDateTime.of(2021, 2, 2, 5, 0, 0, 0, ZoneOffset.UTC),
+          OffsetDateTime.of(2021, 2, 10, 4, 0, 0, 0, ZoneOffset.UTC)));
+    }
+
 }
