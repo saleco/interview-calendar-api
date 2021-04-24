@@ -88,6 +88,21 @@ class UsersControllerTest {
         then(userService).shouldHaveNoInteractions();
     }
 
+    @DisplayName("Given request with name greater then 60 when createUser then Should return status 400.")
+    @Test
+    void givenRequestWithNameGreaterThen60MandatoryFieldsWhenCreateUserThenShouldReturnStatus400() throws Exception {
+        CreateUserDto createUserDto = CreateUserDto.builder().name("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").build();
+        mockMvc
+          .perform(post(USERS_API)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(createUserDto))
+          )
+          .andExpect(status().isBadRequest())
+          .andExpect(content().string(containsString("There is a validation rule that prevents the request.")));
+
+        then(userService).shouldHaveNoInteractions();
+    }
+
     @DisplayName("Given correct request when createUser then Should return status 200.")
     @Test
     void givenRequestWhenCreateUserThenShouldReturnStatus200() throws Exception {
@@ -109,5 +124,6 @@ class UsersControllerTest {
         then(userService).should(times(1)).createUser(any(CreateUserDto.class));
         then(userService).shouldHaveNoMoreInteractions();
     }
+
 
 }

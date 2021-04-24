@@ -31,7 +31,6 @@ public class ExceptionHandlerController {
 	private static final String END_TAG = "}";
 	public static final String THERE_IS_A_VALIDATION_RULE_THAT_PREVENTS_THE_REQUEST_SEE_RULE = "There is a validation rule that prevents the request. See rule | ";
 	public static final String NOT_NULL = "NotNull";
-	public static final String PATTERN = "Pattern";
 	public static final String SIZE = "Size";
 	public static final String VALIDATION_EXCEPTION_MESSAGE = "ValidationException: %s";
 	public static final String MANDATORY = ",mandatory";
@@ -112,20 +111,6 @@ public class ExceptionHandlerController {
 				String max = "" + error.getArguments()[1];
 				message.append(START_TAG + field + ",size," + min + "-" + max + END_TAG);
 			}
-			if (PATTERN.equals(code)) {
-				String full = error.getDefaultMessage();
-				String[] parts = full.split("\"");
-				String pattern = "";
-				if (parts.length > 1) {
-					pattern = parts[1];
-				}
-				message.append(START_TAG + field + ",pattern," + pattern + END_TAG);
-			}
-			if("Min".equals(code)){
-				String min = "" + error.getArguments()[1];
-
-				message.append(START_TAG + field + ",min," + min + END_TAG);
-			}
 		}
 
 		log.info(VALIDATION_EXCEPTION_MESSAGE, message, ex);
@@ -150,20 +135,6 @@ public class ExceptionHandlerController {
 				String max = "" + error.getArguments()[1];
 				message.append(START_TAG + field + ",size," + min + "-" + max + END_TAG);
 			}
-			if (PATTERN.equals(code)) {
-				String full = error.getDefaultMessage();
-				String[] parts = full.split("\"");
-				String pattern = "";
-				if (parts.length > 1) {
-					pattern = parts[1];
-				}
-				message.append(START_TAG + field + ",pattern," + pattern + END_TAG);
-			}
-			if("Min".equals(code)){
-				String min = "" + error.getArguments()[1];
-
-				message.append(START_TAG + field + ",min," + min + END_TAG);
-			}
 		}
 
 		log.info("ValidationException: {}", message);
@@ -186,10 +157,6 @@ public class ExceptionHandlerController {
 					String min = "" + descriptor.getAttributes().get("min");
 					String max = "" + descriptor.getAttributes().get("max");
 					message.append(START_TAG + violation.getPropertyPath() + ",size," + min + "-" + max + END_TAG);
-				}
-				if (annotationName.endsWith(PATTERN)) {
-					String pattern = "" + descriptor.getAttributes().get("regexp");
-					message.append(START_TAG + violation.getPropertyPath() + ",pattern," + pattern + END_TAG);
 				}
 			}
 		}
