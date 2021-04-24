@@ -1,7 +1,6 @@
 package com.github.saleco.interview.calendar.api.agenda.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -42,8 +42,8 @@ hour until the beginning of the next hour. For example, a time span between 9am 
 
 ## Local Development Environment
 ### Pre-requisites
-- jdk 11 (Configure JAVA_HOME to your path)
-- maven 3 (Configure MAVEN_HOME to your path)
+- [jdk 11 (Configure JAVA_HOME to your path)](https://www.oracle.com/pt/java/technologies/javase-jdk11-downloads.html)
+- [maven 3 (Configure MAVEN_HOME to your path)](https://maven.apache.org/download.cgi)
 
 ### Running the application Locally
 `mvn clean install`

@@ -10,7 +10,7 @@ import com.github.saleco.interview.calendar.api.user.dto.CreateUserDto;
 import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import com.github.saleco.interview.calendar.api.user.service.UserService;
 import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.in;
     Integration tests to validate Interview Calendar API Use Cases
  */
 @SpringBootTest
-public class InteviewCalendarAPIIT {
+class InteviewCalendarAPIIT {
 
     public static final int YEAR = 2021;
     public static final int MONTH = 4;
@@ -43,29 +43,17 @@ public class InteviewCalendarAPIIT {
     @Autowired
     UserService userService;
 
-    private UserDto david;
-    private UserDto ingrid;
-    private UserDto carl;
-    private UserDto ines;
-
-    private List<AgendaDto> davidAgendas;
-    private List<AgendaDto> ingridAgendas;
-    private List<AgendaDto> carlAgendas;
-
-    @BeforeEach
-    public void setup() {
-        david = createUser("David", UserType.INTERVIEWER);
-        ingrid = createUser("Ingrid", UserType.INTERVIEWER);
-        ines = createUser("Ines", UserType.INTERVIEWER);
-        carl = createUser("Carl", UserType.CANDIDATE);
-        davidAgendas = createAvailability(david, getDavidAvailabilities());
-        ingridAgendas = createAvailability(ingrid, getIngridAvailabilities());
-        carlAgendas = createAvailability(carl, getCarlAvailabilities());
-    }
-
     @DisplayName("As an INTERVIEWER, I would like to set availability slots - David is available next week each day from 9am through 4pm without breaks")
     @Test
     void givenDavidAsInterviewerAndAvailabilitiesWhenSetupAvailabilityThenShouldCreateAvailabitiesForDavid() {
+
+        //GIVEN
+        UserDto david = createUser("David", UserType.INTERVIEWER);
+
+        //WHEN
+        List<AgendaDto> davidAgendas = createAvailability(david, getDavidAvailabilities());
+
+        // THEN
 
         //asserting agenda size (7 slots a day / 5 days - 35 slots)
         assertThat(davidAgendas.size()).isEqualTo(35);
@@ -93,6 +81,14 @@ public class InteviewCalendarAPIIT {
       "Ingrid is available from 12pm to 6pm on Monday and Wednesday next week, and from 9am to 12pm on Tuesday and Thursday")
     @Test
     void givenIngridAsInterviewerAndAvailabilitiesWhenSetupAvailabilityThenShouldCreateAvailabitiesForIngrid() {
+        // GIVEN
+        UserDto ingrid = createUser("Ingrid", UserType.INTERVIEWER);
+
+        //WHEN
+        List<AgendaDto> ingridAgendas = createAvailability(ingrid, getIngridAvailabilities());
+
+        //THEN
+
         //asserting agenda size (6 slots 2 days + 3 slots 2 days - 18 slots )
         assertThat(ingridAgendas.size()).isEqualTo(18);
 
@@ -119,6 +115,14 @@ public class InteviewCalendarAPIIT {
       "Carl is available for the interview from 9am to 10am any weekday next week and from 10am to 12pm on Wednesday")
     @Test
     void givenCarlAsCandidateAndAvailabilitiesWhenSetupAvailabilityThenShouldCreateAvailabitiesForCarl() {
+        //GIVEN
+        UserDto carl = createUser("Carl", UserType.CANDIDATE);
+
+        //WHEN
+        List<AgendaDto> carlAgendas = createAvailability(carl, getCarlAvailabilities());
+
+        //THEN
+
         //asserting agenda size (1 slot 4 days + 2 slots 1 day - 6 slots )
         assertThat(carlAgendas.size()).isEqualTo(6);
 
@@ -146,7 +150,16 @@ public class InteviewCalendarAPIIT {
       "In this example, if the API queries for the candidate Carl and interviewers Ines and Ingrid, the response should be" +
       " a collection of 1-hour slots: from 9am to 10am on Tuesday, from 9am to 10am on Thursday.")
     @Test
-    void givenCarlAsCandidateIngridAndDavidAsInterviewrsWhenSearchAvailabilityThenShouldReturnAvailabilities() {
+    void givenCarlAsCandidateIngridAndInesAsInterviewrsWhenSearchAvailabilityThenShouldReturnAvailabilities() {
+        //GIVEN
+        UserDto carl = createUser("Carl", UserType.CANDIDATE);
+        UserDto ingrid = createUser("Ingrid", UserType.INTERVIEWER);
+        UserDto ines = createUser("Ines", UserType.INTERVIEWER);
+
+        createAvailability(ingrid, getIngridAvailabilities());
+        createAvailability(carl, getCarlAvailabilities());
+
+        //WHEN
         Page<AgendaDto> agendaDtos = agendaService.getAvailability(
           SearchInterviewsAvailabilityDto.builder()
             .candidateId(carl.getId())
@@ -156,8 +169,26 @@ public class InteviewCalendarAPIIT {
             .build()
         );
 
-        assertThat(agendaDtos).isNotNull();
-        assertThat(agendaDtos).isNotEmpty();
+        //THEN
+
+        Assertions.assertAll(
+          () -> assertThat(agendaDtos).isNotNull(),
+          () -> assertThat(agendaDtos).isNotEmpty(),
+          () -> assertThat(agendaDtos).hasSize(2)
+        );
+        ;
+
+        assertThat(agendaDtos.getContent().get(0).getStart())
+          .isEqualTo(OffsetDateTime.of(YEAR, MONTH, 27, 9, 0, 0, 0, ZoneOffset.UTC));
+
+        assertThat(agendaDtos.getContent().get(0).getEnd())
+          .isEqualTo(OffsetDateTime.of(YEAR, MONTH, 27, 10, 0, 0, 0, ZoneOffset.UTC));
+
+        assertThat(agendaDtos.getContent().get(1).getStart())
+          .isEqualTo(OffsetDateTime.of(YEAR, MONTH, 29, 9, 0, 0, 0, ZoneOffset.UTC));
+
+        assertThat(agendaDtos.getContent().get(1).getEnd())
+          .isEqualTo(OffsetDateTime.of(YEAR, MONTH, 29, 10, 0, 0, 0, ZoneOffset.UTC));
 
     }
 

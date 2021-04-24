@@ -6,6 +6,7 @@ import com.github.saleco.interview.calendar.api.user.dto.UserDto;
 import com.github.saleco.interview.calendar.api.user.mapper.UserMapper;
 import com.github.saleco.interview.calendar.api.user.model.User;
 import com.github.saleco.interview.calendar.api.user.repository.UserRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,8 +57,10 @@ class UserServiceImplTest {
 
         Page<UserDto> userDtos = userService.getUsersByType(0, 20, UserType.CANDIDATE);
 
-        assertThat(userDtos).isNotNull();
-        assertThat(userDtos).hasSize(1);
+        Assertions.assertAll(
+          () -> assertThat(userDtos).isNotNull(),
+          () -> assertThat(userDtos).hasSize(1)
+        );
 
         then(userRepository).should(times(1)).findALlByUserType(any(UserType.class), any(PageRequest.class));
         then(userMapper).should(times(1)).modelToDto(any(User.class));

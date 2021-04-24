@@ -34,6 +34,7 @@ public class ExceptionHandlerController {
 	public static final String PATTERN = "Pattern";
 	public static final String SIZE = "Size";
 	public static final String VALIDATION_EXCEPTION_MESSAGE = "ValidationException: %s";
+	public static final String MANDATORY = ",mandatory";
 
 	@ExceptionHandler(value = { ConstraintViolationException.class, MethodArgumentNotValidException.class,
 			BusinessException.class, Exception.class })
@@ -104,7 +105,7 @@ public class ExceptionHandlerController {
 			String field = f.substring(f.indexOf('.') + 1);
 
 			if (NOT_NULL.equals(code)) {
-				message.append(START_TAG + field + ",mandatory" + END_TAG);
+				message.append(START_TAG + field + MANDATORY + END_TAG);
 			}
 			if ("Size".equals(code)) {
 				String min = "" + error.getArguments()[2];

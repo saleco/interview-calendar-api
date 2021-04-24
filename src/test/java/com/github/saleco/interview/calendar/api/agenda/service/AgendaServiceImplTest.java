@@ -1,6 +1,7 @@
 package com.github.saleco.interview.calendar.api.agenda.service;
 
 import com.github.saleco.interview.calendar.api.agenda.dto.AgendaDto;
+import com.github.saleco.interview.calendar.api.agenda.dto.CreateAgendaDto;
 import com.github.saleco.interview.calendar.api.agenda.dto.SearchInterviewsAvailabilityDto;
 import com.github.saleco.interview.calendar.api.agenda.mapper.AgendaMapper;
 import com.github.saleco.interview.calendar.api.agenda.model.Agenda;
@@ -19,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.sql.Timestamp;
@@ -59,8 +59,11 @@ class AgendaServiceImplTest {
     @Test
     void givenAgendaDTOWhenCreateAgendaThenShouldThrowIllegalArgumentsException() {
         doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUserInput(1L);
+
+        AgendaDto agendaDto = AgendaDto.builder().userId(1L).build();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-          () -> agendaServiceSpy.createAgenda(AgendaDto.builder().userId(1L).build()));
+          () -> agendaServiceSpy.createAgenda(agendaDto));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(agendaMapper).shouldHaveNoInteractions();
@@ -73,8 +76,10 @@ class AgendaServiceImplTest {
     @Test
     void givenAgendaDTOWhenCreateAgendaThenShouldThrowNotFoundException() {
         doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInput(1L);
+
+        AgendaDto agendaDto = AgendaDto.builder().userId(1L).build();
         Assertions.assertThrows(NotFoundException.class,
-          () -> agendaServiceSpy.createAgenda(AgendaDto.builder().userId(1L).build()));
+          () -> agendaServiceSpy.createAgenda(agendaDto));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(agendaMapper).shouldHaveNoInteractions();
@@ -133,8 +138,11 @@ class AgendaServiceImplTest {
     @Test
     void givenAgendaDtoListWhenCreateAgendasThenShouldThrowIllegalArgumentsException() {
         doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUserInput(anyLong());
+
+        List<AgendaDto> agendaDtos = Collections.singletonList(AgendaDto.builder().userId(1L).build());
+
         Assertions.assertThrows(IllegalArgumentException.class,
-          () -> agendaServiceSpy.createAgendas(Collections.singletonList(AgendaDto.builder().userId(1L).build())));
+          () -> agendaServiceSpy.createAgendas(agendaDtos));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(agendaMapper).shouldHaveNoInteractions();
@@ -147,8 +155,11 @@ class AgendaServiceImplTest {
     @Test
     void givenAgendaDtoListWhenCreateAgendasThenShouldThrowNotFoundException() {
         doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInput(1L);
+
+        List<AgendaDto> agendaDtos = Collections.singletonList(AgendaDto.builder().userId(1L).build());
+
         Assertions.assertThrows(NotFoundException.class,
-          () -> agendaServiceSpy.createAgendas(Collections.singletonList(AgendaDto.builder().userId(1L).build())));
+          () -> agendaServiceSpy.createAgendas(agendaDtos));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(agendaMapper).shouldHaveNoInteractions();
@@ -164,8 +175,10 @@ class AgendaServiceImplTest {
         doNothing().when(agendaServiceSpy).validatesUserInput(1L);
         doThrow(ValidationException.class).when(agendaServiceSpy).validateAgenda(any(AgendaDto.class));
 
+        List<AgendaDto> agendaDtos = Collections.singletonList(agendaDto);
+
         Assertions.assertThrows(ValidationException.class,
-          () -> agendaServiceSpy.createAgendas(Collections.singletonList(agendaDto)));
+          () -> agendaServiceSpy.createAgendas(agendaDtos));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(agendaMapper).shouldHaveNoInteractions();
@@ -190,9 +203,12 @@ class AgendaServiceImplTest {
 
         List<AgendaDto> agendaDtosReturned = agendaServiceSpy.createAgendas(Collections.singletonList(agendaDto));
 
-        assertThat(agendaDtosReturned).isNotNull();
-        assertThat(agendaDtosReturned).isNotEmpty();
-        assertThat(agendaDtosReturned.get(0).getUserId()).isEqualTo(1L);
+        Assertions.assertAll(
+          () -> assertThat(agendaDtosReturned).isNotNull(),
+          () -> assertThat(agendaDtosReturned).isNotEmpty(),
+          () -> assertThat(agendaDtosReturned.get(0).getUserId()).isEqualTo(1L)
+        );
+
 
         then(agendaRepository).should(times(1)).saveAll(any(List.class));
         then(agendaMapper).should(times(1)).dtoToModel(any(AgendaDto.class));
@@ -208,8 +224,12 @@ class AgendaServiceImplTest {
     @Test
     void givenSearchInterviewAvailabilityDTOWhenGetAvailabilityValidatesUserInputWithUserTypeThenShouldThrowIllegalArgumentException() {
         doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+
+        SearchInterviewsAvailabilityDto searchInterviewsAvailabilityDto
+          = SearchInterviewsAvailabilityDto.builder().candidateId(1L).build();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-          () -> agendaServiceSpy.getAvailability(SearchInterviewsAvailabilityDto.builder().candidateId(1L).build()));
+          () -> agendaServiceSpy.getAvailability(searchInterviewsAvailabilityDto));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(dateMapper).shouldHaveNoInteractions();
@@ -223,8 +243,11 @@ class AgendaServiceImplTest {
     @Test
     void givenSearchInterviewAvailabilityDTOWhenGetAvailabilityValidatesUserInputWithUserTypeThenShouldThrowNotFoundException() {
         doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+
+        SearchInterviewsAvailabilityDto searchInterviewsAvailabilityDto = SearchInterviewsAvailabilityDto.builder().candidateId(1L).build();
+
         Assertions.assertThrows(NotFoundException.class,
-          () -> agendaServiceSpy.getAvailability(SearchInterviewsAvailabilityDto.builder().candidateId(1L).build()));
+          () -> agendaServiceSpy.getAvailability(searchInterviewsAvailabilityDto));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(dateMapper).shouldHaveNoInteractions();
@@ -240,8 +263,11 @@ class AgendaServiceImplTest {
         doNothing().when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
         doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUsersInputWithUserType(anyList(), any(UserType.class));
 
+        SearchInterviewsAvailabilityDto searchInterviewsAvailabilityDto =
+          SearchInterviewsAvailabilityDto.builder().candidateId(1L).interviewerIds(Collections.emptyList()).build();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-          () -> agendaServiceSpy.getAvailability(SearchInterviewsAvailabilityDto.builder().candidateId(1L).interviewerIds(Collections.emptyList()).build()));
+          () -> agendaServiceSpy.getAvailability(searchInterviewsAvailabilityDto));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(dateMapper).shouldHaveNoInteractions();
@@ -259,15 +285,16 @@ class AgendaServiceImplTest {
         doNothing().when(agendaServiceSpy).validatesUsersInputWithUserType(anyList(), any(UserType.class));
         doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesPeriodInput(any(OffsetDateTime.class), any(OffsetDateTime.class));
 
-        Assertions.assertThrows(IllegalArgumentException.class,
-          () -> agendaServiceSpy.getAvailability(
-            SearchInterviewsAvailabilityDto
-              .builder()
-              .candidateId(1L)
-              .interviewerIds(Collections.emptyList())
-              .startingFrom(OffsetDateTime.now())
-              .endingAt(OffsetDateTime.now().plusDays(5))
-              .build()));
+        SearchInterviewsAvailabilityDto searchInterviewsAvailabilityDto =
+          SearchInterviewsAvailabilityDto
+          .builder()
+          .candidateId(1L)
+          .interviewerIds(Collections.emptyList())
+          .startingFrom(OffsetDateTime.now())
+          .endingAt(OffsetDateTime.now().plusDays(5))
+          .build();
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> agendaServiceSpy.getAvailability(searchInterviewsAvailabilityDto));
 
         then(agendaRepository).shouldHaveNoInteractions();
         then(dateMapper).shouldHaveNoInteractions();
@@ -304,9 +331,11 @@ class AgendaServiceImplTest {
               .endingAt(OffsetDateTime.now().plusDays(5))
               .build());
 
-        assertThat(agendaDtoPage).isNotNull();
-        assertThat(agendaDtoPage).isNotEmpty();
-        assertThat(agendaDtoPage).hasSize(1);
+        Assertions.assertAll(
+          () -> assertThat(agendaDtoPage).isNotNull(),
+          () -> assertThat(agendaDtoPage).isNotEmpty(),
+          () -> assertThat(agendaDtoPage).hasSize(1)
+        );
 
         then(agendaMapper).should(times(1)).modelToDto(any(Agenda.class));
         then(agendaRepository).should(times(1)).searchAvailabilityBy(any(Pageable.class), anyLong(), anyList(), any(Timestamp.class), any(Timestamp.class));
@@ -322,10 +351,51 @@ class AgendaServiceImplTest {
     }
 
 
+    @DisplayName("Given Create Agenda DTO When createAvailability then validateUserInput throws IllegalArgumentsException")
     @Test
-    void createAvailability() {
+    void givenCreateAgendaDtoWhenCreateAvailabilityThenShouldThrowIllegalArgumentsException() {
+        doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUserInput(1L);
 
+        CreateAgendaDto createAgendaDto = CreateAgendaDto.builder().userId(1L).build();
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> agendaServiceSpy.createAvailability(createAgendaDto));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInput(anyLong());
+        then(agendaServiceSpy).should(times(1)).createAvailability(any(CreateAgendaDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
+
+    @DisplayName("Given Create Agenda DTO When createAvailability then validateUserInput throws NotFoundException")
+    @Test
+    void givenCreateAgendaDtoWhenCreateAvailabilityThenShouldThrowINotFoundException() {
+        doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInput(1L);
+
+        CreateAgendaDto createAgendaDto = CreateAgendaDto.builder().userId(1L).build();
+
+        Assertions.assertThrows(NotFoundException.class, () -> agendaServiceSpy.createAvailability(createAgendaDto));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInput(anyLong());
+        then(agendaServiceSpy).should(times(1)).createAvailability(any(CreateAgendaDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
+    }
+
+//    @DisplayName("Given Create Agenda DTO When createAvailability then validateUserInput throws NotFoundException")
+//    @Test
+//    void givenCreateAgendaDtoWhenCreateAvailabilityThenShouldThrowINotFoundException() {
+//        doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInput(1L);
+//        Assertions.assertThrows(NotFoundException.class,
+//          () -> agendaServiceSpy.createAvailability(CreateAgendaDto.builder().userId(1L).build()));
+//
+//        then(agendaRepository).shouldHaveNoInteractions();
+//        then(agendaMapper).shouldHaveNoInteractions();
+//        then(agendaServiceSpy).should(times(1)).validatesUserInput(anyLong());
+//        then(agendaServiceSpy).should(times(1)).createAvailability(any(CreateAgendaDto.class));
+//        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
+//    }
 
     @Test
     void validateAvailabilities() {
