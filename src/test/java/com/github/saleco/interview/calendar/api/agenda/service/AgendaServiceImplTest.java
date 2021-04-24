@@ -1,11 +1,14 @@
 package com.github.saleco.interview.calendar.api.agenda.service;
 
 import com.github.saleco.interview.calendar.api.agenda.dto.AgendaDto;
+import com.github.saleco.interview.calendar.api.agenda.dto.SearchInterviewsAvailabilityDto;
 import com.github.saleco.interview.calendar.api.agenda.mapper.AgendaMapper;
 import com.github.saleco.interview.calendar.api.agenda.model.Agenda;
 import com.github.saleco.interview.calendar.api.agenda.repository.AgendaRepository;
+import com.github.saleco.interview.calendar.api.enums.UserType;
 import com.github.saleco.interview.calendar.api.exception.NotFoundException;
 import com.github.saleco.interview.calendar.api.exception.ValidationException;
+import com.github.saleco.interview.calendar.api.mapper.DateMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +17,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,6 +41,9 @@ class AgendaServiceImplTest {
 
     @Mock
     private AgendaMapper agendaMapper;
+
+    @Mock
+    private DateMapper dateMapper;
 
     @InjectMocks
     private AgendaServiceImpl agendaService;
@@ -191,9 +204,123 @@ class AgendaServiceImplTest {
 
     }
 
+    @DisplayName("Given SearchInterviewAvailability DTO When getAvailability then validatesUserInputWithUserType throws IllegalArgumentException")
     @Test
-    void getAvailability() {
+    void givenSearchInterviewAvailabilityDTOWhenGetAvailabilityValidatesUserInputWithUserTypeThenShouldThrowIllegalArgumentException() {
+        doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        Assertions.assertThrows(IllegalArgumentException.class,
+          () -> agendaServiceSpy.getAvailability(SearchInterviewsAvailabilityDto.builder().candidateId(1L).build()));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(dateMapper).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).getAvailability(any(SearchInterviewsAvailabilityDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
     }
+
+    @DisplayName("Given SearchInterviewAvailability DTO When getAvailability then validatesUserInputWithUserType throws NotFoundException")
+    @Test
+    void givenSearchInterviewAvailabilityDTOWhenGetAvailabilityValidatesUserInputWithUserTypeThenShouldThrowNotFoundException() {
+        doThrow(NotFoundException.class).when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        Assertions.assertThrows(NotFoundException.class,
+          () -> agendaServiceSpy.getAvailability(SearchInterviewsAvailabilityDto.builder().candidateId(1L).build()));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(dateMapper).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).getAvailability(any(SearchInterviewsAvailabilityDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
+    }
+
+    @DisplayName("Given SearchInterviewAvailability DTO When getAvailability then validatesUsersInputWithUserType throws IllegalArgumentsException")
+    @Test
+    void givenSearchInterviewAvailabilityDTOWhengetAvailabilityValidatesUsersInputWithUserTypeThenShouldThrowIllegalArgumentsException() {
+        doNothing().when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesUsersInputWithUserType(anyList(), any(UserType.class));
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+          () -> agendaServiceSpy.getAvailability(SearchInterviewsAvailabilityDto.builder().candidateId(1L).interviewerIds(Collections.emptyList()).build()));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(dateMapper).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).validatesUsersInputWithUserType(anyList(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).getAvailability(any(SearchInterviewsAvailabilityDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
+    }
+
+    @DisplayName("Given SearchInterviewAvailability DTO When getAvailability then validatesPeriodInput throws IllegalArgumentsException")
+    @Test
+    void givenSearchInterviewAvailabilityDTOWhenGetAvailabilityValidatesPeriodInputThenShouldThrowIllegalArgumentsException() {
+        doNothing().when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        doNothing().when(agendaServiceSpy).validatesUsersInputWithUserType(anyList(), any(UserType.class));
+        doThrow(IllegalArgumentException.class).when(agendaServiceSpy).validatesPeriodInput(any(OffsetDateTime.class), any(OffsetDateTime.class));
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+          () -> agendaServiceSpy.getAvailability(
+            SearchInterviewsAvailabilityDto
+              .builder()
+              .candidateId(1L)
+              .interviewerIds(Collections.emptyList())
+              .startingFrom(OffsetDateTime.now())
+              .endingAt(OffsetDateTime.now().plusDays(5))
+              .build()));
+
+        then(agendaRepository).shouldHaveNoInteractions();
+        then(dateMapper).shouldHaveNoInteractions();
+        then(agendaMapper).shouldHaveNoInteractions();
+        then(agendaServiceSpy).should(times(1)).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).validatesUsersInputWithUserType(anyList(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).validatesPeriodInput(any(OffsetDateTime.class), any(OffsetDateTime.class));
+        then(agendaServiceSpy).should(times(1)).getAvailability(any(SearchInterviewsAvailabilityDto.class));
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
+    }
+
+    @DisplayName("Given SearchInterviewAvailability DTO When getAvailability then should return Page of AgendaDto")
+    @Test
+    void givenSearchInterviewAvailabilityDTOWhenGetAvailabilityThenShouldReturnAgendaDtoPage() {
+        AgendaDto agendaDto = AgendaDto.builder().userId(1L).build();
+        Agenda agenda = Agenda.builder().build();
+
+        doNothing().when(agendaServiceSpy).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        doNothing().when(agendaServiceSpy).validatesUsersInputWithUserType(anyList(), any(UserType.class));
+        doNothing().when(agendaServiceSpy).validatesPeriodInput(any(OffsetDateTime.class), any(OffsetDateTime.class));
+
+        given(dateMapper.asTimestamp(any(OffsetDateTime.class))).willReturn(Timestamp.valueOf(LocalDateTime.now()));
+        given(agendaMapper.modelToDto(agenda)).willReturn(agendaDto);
+        given(agendaRepository.searchAvailabilityBy(any(), anyLong(), anyList(), any(Timestamp.class), any(Timestamp.class)))
+          .willReturn(new PageImpl<>(Collections.singletonList(agenda)));
+
+        Page<AgendaDto> agendaDtoPage =
+          agendaServiceSpy.getAvailability(
+            SearchInterviewsAvailabilityDto
+              .builder()
+              .candidateId(1L)
+              .interviewerIds(Collections.emptyList())
+              .startingFrom(OffsetDateTime.now())
+              .endingAt(OffsetDateTime.now().plusDays(5))
+              .build());
+
+        assertThat(agendaDtoPage).isNotNull();
+        assertThat(agendaDtoPage).isNotEmpty();
+        assertThat(agendaDtoPage).hasSize(1);
+
+        then(agendaMapper).should(times(1)).modelToDto(any(Agenda.class));
+        then(agendaRepository).should(times(1)).searchAvailabilityBy(any(Pageable.class), anyLong(), anyList(), any(Timestamp.class), any(Timestamp.class));
+        then(agendaServiceSpy).should(times(1)).validatesUserInputWithUserType(anyLong(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).validatesUsersInputWithUserType(anyList(), any(UserType.class));
+        then(agendaServiceSpy).should(times(1)).validatesPeriodInput(any(OffsetDateTime.class), any(OffsetDateTime.class));
+        then(agendaServiceSpy).should(times(1)).getAvailability(any(SearchInterviewsAvailabilityDto.class));
+        then(dateMapper).should(times(2)).asTimestamp(any(OffsetDateTime.class));
+        then(dateMapper).shouldHaveNoMoreInteractions();
+        then(agendaServiceSpy).shouldHaveNoMoreInteractions();
+        then(agendaRepository).shouldHaveNoMoreInteractions();
+        then(agendaMapper).shouldHaveNoMoreInteractions();
+    }
+
 
     @Test
     void createAvailability() {
