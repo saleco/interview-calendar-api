@@ -31,8 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
-/.mvn/wrapper/maven-wrapper.jar
-/.mvn/wrapper/maven-wrapper.properties
-/.mvn/
 /src/main/docker/local/elasticsearch/
 /src/main/docker/local/filebeat/data/
