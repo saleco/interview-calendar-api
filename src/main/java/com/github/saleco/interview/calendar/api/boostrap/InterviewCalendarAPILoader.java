@@ -41,8 +41,7 @@ public class InterviewCalendarAPILoader implements CommandLineRunner {
         for (int i = 0; i < 10; i++) {
             UserDto userDto = userService.createUser(createUser(UserType.INTERVIEWER));
 
-            //creates an agenda for the next 30 days
-            //not considering february
+            //creates an agenda for the next 10 days
             for(OffsetDateTime today = OffsetDateTime.now(); today.isBefore(OffsetDateTime.now().plusDays(TEN_DAYS)); today = today.plusDays(1)) {
                  for (int hour = INITAL_WORKING_HOUR; hour < FINAL_WORKING_HOUR; hour++) {
                     agendaService.createAgenda(createAgenda(userDto.getId(), today, hour));
@@ -50,12 +49,11 @@ public class InterviewCalendarAPILoader implements CommandLineRunner {
             }
         }
 
-        //creating interviewers
+        //creating candidates
         for (int i = 0; i < 10; i++) {
             UserDto userDto = userService.createUser(createUser(UserType.CANDIDATE));
 
-            //creates an agenda for each working day until 30th of current month / each hour of the day from 9am to 6pm
-            //not considering february
+            //creates an agenda for the next 10 days
             for(OffsetDateTime today = OffsetDateTime.now(); today.isBefore(OffsetDateTime.now().plusDays(TEN_DAYS)); today = today.plusDays(1)) {
                 for (int hour = INITAL_WORKING_HOUR; hour < FINAL_WORKING_HOUR; hour++) {
                     agendaService.createAgenda(createAgenda(userDto.getId(), today, hour));
