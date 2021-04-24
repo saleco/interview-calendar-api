@@ -290,6 +290,9 @@
                         <exclude>**/*Dto*</exclude>
                         <exclude>**/*Builder*</exclude>
                         <exclude>**/*Mapper*</exclude>
+                        <exclude>**/*Exception*</exclude>
+                        <exclude>**/*InterviewCalendarAPIApplication*</exclude>
+                        <exclude>**/*ExceptionHandlerController*</exclude>
                     </excludes>
                 </configuration>
 
