@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface AgendaRepository extends JpaRepository<Agenda, Long> {
 
-    String SEARCH_AVAILABILITY = "select candidate_agenda " +
+    String SEARCH_AVAILABILITY = "select interviewer_agenda " +
       "from Agenda candidate_agenda \n" +
       "inner join Agenda interviewer_agenda \n" +
       " on PARSEDATETIME(candidate_agenda.start, 'yyyy-MM-dd HH:mm:ss') = PARSEDATETIME(interviewer_agenda.start, 'yyyy-MM-dd HH:mm:ss') \n" +
@@ -19,8 +19,7 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
       "where candidate_agenda.user.id = ?1 \n" +
       "and interviewer_agenda.user.id in (?2) \n" +
       "and ((candidate_agenda.start between ?3 and ?4) or (candidate_agenda.end between ?3 and ?4)) \n" +
-      "and ((interviewer_agenda.start between ?3 and ?4) or (interviewer_agenda.end between ?3 and ?4)) \n" +
-      "group by candidate_agenda.id";
+      "and ((interviewer_agenda.start between ?3 and ?4) or (interviewer_agenda.end between ?3 and ?4)) \n";
 
     @Query(value = SEARCH_AVAILABILITY)
     Page<Agenda> searchAvailabilityBy(Pageable pageable, Long candidateId, List<Long> interviewerIds, Timestamp start, Timestamp end);

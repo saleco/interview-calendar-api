@@ -20,6 +20,16 @@ public class UserServiceImpl extends AbstractService implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    /**
+     * Get Users by UserType paginated
+     *
+     * @param  page - 0 Indexed Page (default value 0)
+     * @param  size - Size of the Page (default value 20)
+     * @param  userType - The type of the User
+     * @return the Page of Users for the given criteria
+     * @see UserType
+     * @see Page
+     */
     @Override
     public Page<UserDto> getUsersByType(int page, int size, UserType userType) {
         log.debug("Searching users by page {}, pageSize {} and type {}.", page, size, userType);
@@ -30,6 +40,13 @@ public class UserServiceImpl extends AbstractService implements UserService {
             .map(userMapper::modelToDto);
     }
 
+    /**
+     * Creates an User - The User can be of Type Candidate / Interviewer
+     *
+     * @param  createUserDto - User values
+     * @return the created User
+     * @see CreateUserDto
+     */
     @Override
     public UserDto createUser(CreateUserDto createUserDto) {
         log.debug("Creating user {}", createUserDto);
@@ -40,6 +57,13 @@ public class UserServiceImpl extends AbstractService implements UserService {
           .modelToDto(userRepository.save(userMapper.dtoToModel(userDto)));
     }
 
+    /**
+     * Transforms a CreateUserDto into UserDto
+     *
+     * @param  createUserDto - User values
+     * @return UserDto
+     * @see CreateUserDto
+     */
     @Override
     public UserDto getUserDtoFromCreateUserDto(CreateUserDto createUserDto) {
         return UserDto

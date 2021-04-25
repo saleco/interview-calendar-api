@@ -16,17 +16,20 @@ hour until the beginning of the next hour. For example, a time span between 9am 
 
 ## Use Cases
 
-- ### As an INTERVIEWER, I would like to set availability slots
+- ### As an INTERVIEWER / CANDIDATE, I would like to create an User [(POST /ap1/v1/users/)](http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config#/Users's%20API/createUser)
+
+- ### As an INTERVIEWER, I would like to set availability slots [(POST /ap1/v1/agendas/)](http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config#/Agendas's%20API/setupAgendaSlots)
     - David is available next week each day from 9am through 4pm without breaks
     - Ingrid is available from 12pm to 6pm on Monday and Wednesday next week, and from 9am to 12pm on Tuesday and Thursday.
 
-- ### As a CANDIDATE, I would like to set availability slots
+- ### As a CANDIDATE, I would like to set availability slots [(POST /ap1/v1/agendas/)](http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config#/Agendas's%20API/setupAgendaSlots)
     - Carl is available for the interview from 9am to 10am any weekday next week and from 10am to 12pm on Wednesday 
     
-- ### As a USER, I would like to get a list of possible interview slots for a particular candidate and one or more interviewers
+- ### As a USER, I would like to get a list of possible interview slots for a particular candidate and one or more interviewers [(GET /ap1/v1/agendas/search/)](http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config#/Agendas's%20API/getAgendas) 
     - In this example, if the API queries for the candidate Carl and interviewers Ines and
       Ingrid, the response should be a collection of 1-hour slots: from 9am to 10am on
       Tuesday, from 9am to 10am on Thursday.
+      
       
 ## Possible Use Cases
 
@@ -49,6 +52,13 @@ hour until the beginning of the next hour. For example, a time span between 9am 
 `mvn clean install`
 
 `mvn spring-boot:run -Dspring-boot.run.profiles=local`
+
+### Building / Pushing a Docker Image
+`mvn clean install`
+
+`mvn docker:build`
+
+`mvn docker:push`
 
 ### Accessing the API Locally
 | Service  |      Url                |  Description                             |

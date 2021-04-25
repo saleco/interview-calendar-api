@@ -176,7 +176,6 @@ class InteviewCalendarAPIIT {
           () -> assertThat(agendaDtos).isNotEmpty(),
           () -> assertThat(agendaDtos).hasSize(2)
         );
-        ;
 
         assertThat(agendaDtos.getContent().get(0).getStart())
           .isEqualTo(OffsetDateTime.of(YEAR, MONTH, 27, 9, 0, 0, 0, ZoneOffset.UTC));

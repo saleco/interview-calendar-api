@@ -82,9 +82,9 @@ public class InterviewCalendarAPILoader implements CommandLineRunner {
 
         //finds availability between candidate and interviewers
         log.debug("Searching agenda availability for Candidate {}, Interviewers {} ", randomCandidate, randomInterviewers);
-        List<AgendaDto> agendaDtos = getAgendaAvaliability(randomCandidate.getId(), randomInterviewers.stream().map(UserDto::getId).collect(Collectors.toList()));
+        List<AgendaDto> availabilityDtos = getAgendaAvaliability(randomCandidate.getId(), randomInterviewers.stream().map(UserDto::getId).collect(Collectors.toList()));
 
-        log.debug("Found agenda availabilities {}", agendaDtos);
+        log.debug("Found agenda availabilities {}", availabilityDtos);
     }
 
     private List<AgendaDto> getAgendaAvaliability(Long candidateId, List<Long> interviewerIds) {

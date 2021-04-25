@@ -326,7 +326,7 @@ class AgendaServiceImplTest {
         given(agendaRepository.searchAvailabilityBy(any(), anyLong(), anyList(), any(Timestamp.class), any(Timestamp.class)))
           .willReturn(new PageImpl<>(Collections.singletonList(agenda)));
 
-        Page<AgendaDto> agendaDtoPage =
+        Page<AgendaDto> agendaDtos =
           agendaServiceSpy.getAvailability(
             SearchInterviewsAvailabilityDto
               .builder()
@@ -337,9 +337,9 @@ class AgendaServiceImplTest {
               .build());
 
         Assertions.assertAll(
-          () -> assertThat(agendaDtoPage).isNotNull(),
-          () -> assertThat(agendaDtoPage).isNotEmpty(),
-          () -> assertThat(agendaDtoPage).hasSize(1)
+          () -> assertThat(agendaDtos).isNotNull(),
+          () -> assertThat(agendaDtos).isNotEmpty(),
+          () -> assertThat(agendaDtos).hasSize(1)
         );
 
         then(agendaMapper).should(times(1)).modelToDto(any(Agenda.class));
